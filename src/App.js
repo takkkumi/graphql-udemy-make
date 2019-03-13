@@ -4,8 +4,14 @@ import {searchRepositories} from './graphql'
 import {Query} from 'react-apollo'
 import client from './client'
 
+const StarButton = props =>{
+  const totalCount = props.node.stargazers.totalCount
+  const stargazerUnit = totalCount === 1 ? "star":"stars"
+  return <button>{`${totalCount} ${stargazerUnit}`}</button>
+}
+const PER_PAGE = 5
 const DEFAULT_STATE = {
-   "first": 5,
+   "first": PER_PAGE,
   "last": null,
   "before": null,
   "after": null,
@@ -27,6 +33,22 @@ class App extends Component {
   }
   handleSubmit(event){
     event.preventDefault()
+  }
+  goNext(search){
+    this.setState({
+      first: PER_PAGE,
+      after: search.pageInfo.endCursor,
+      last: null,
+      before: null
+    })
+  }
+  goPrevious(search){
+    this.setState({
+      first: null,
+      after: null,
+      last: PER_PAGE,
+      before: search.pageInfo.startCursor
+    })
   }
   render() {
     const {query,first,last,before,after} = this.state
@@ -50,7 +72,46 @@ class App extends Component {
             const repositoryCount = search.repositoryCount
             const repositoryUnit = repositoryCount === 1?  "Repository" : "Repositories"
             const title = `Github Repositories Search Results -${data.search.repositoryCount} ${repositoryUnit}`
-            return <h2>{title}</h2>
+             const nextpage = search.pageInfo.hasNextPage 
+             const previouspage = search.pageInfo.hasPreviousPage
+             
+            return (
+              <React.Fragment>
+              <h2>{title}</h2>)
+              <ul>
+              
+              {
+                
+                search.edges.map(edge => {
+                  const node = edge.node
+                  return(
+                    <li key={node.id} >
+                    <a href={node.url} target="_blank" rel="noopener noreferrer">{node.name}</a>
+                    &nbsp;
+                    <StarButton node={node}/>
+                    </li>
+                    )
+                })
+              }
+              </ul>
+             { previouspage === true ?
+             <button
+             onClick={this.goPrevious.bind(this,search)}
+             >
+             Previous
+             </button>
+               : null
+             }
+            
+             
+             { nextpage === true ?
+            <button
+            onClick={this.goNext.bind(this,search)}
+            >
+               Next
+              </button>
+              : null }
+              </React.Fragment>)
           }
         }
      </Query >
