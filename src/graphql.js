@@ -27,7 +27,15 @@ export const searchRepositories = gql`
     }
   }
 `
-
+export const AddStars = gql`
+mutation addStar($input: AddStarInput!){
+  addStar(input: $input){
+    starrable{
+      id
+      viewerHasStarred
+    }
+  }
+}`
 
 
 export const ME = gql`
