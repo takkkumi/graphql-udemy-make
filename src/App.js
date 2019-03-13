@@ -5,9 +5,12 @@ import {Query} from 'react-apollo'
 import client from './client'
 
 const StarButton = props =>{
-  const totalCount = props.node.stargazers.totalCount
+  const node = props.node
+  const totalCount = node.stargazers.totalCount
+  const viewerHasStarred = node.viewerHasStarred
   const stargazerUnit = totalCount === 1 ? "star":"stars"
-  return <button>{`${totalCount} ${stargazerUnit}`}</button>
+  
+  return <button>{`${totalCount} ${stargazerUnit}`}| {viewerHasStarred ? "starred" : "-"}</button>
 }
 const PER_PAGE = 5
 const DEFAULT_STATE = {
