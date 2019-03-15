@@ -13,7 +13,26 @@ const StarButton = props =>{
     <button
     onClick={
     () =>  AddOrRemoveStar({
-      variables: {input: {starrableId: node.id}}
+      variables: {input: {starrableId: node.id}},
+      update: (store,{ data: {addStar,removeStar}}) =>{
+      const {starrable} = addStar || removeStar
+      const data = store.readQuery({
+        query: searchRepositories,
+      variables: {query,first,last,before,after}})
+       const edges = data.search.edges
+       const newEdges = edges.map(edge => {
+         if (edge.node.id === node.id) {
+           const totalCount = edge.node.stargazers.totalCount
+           const diff = starrable.viewerHasStarred? 1: -1
+           const newTotalCount = totalCount+ diff
+           edge.node.stargazers.totalCount = newTotalCount
+         }
+         return edge
+       })
+        data.search.edges = newEdges
+        store.writeQuery({ query: searchRepositories,data})
+      }
+     
     })
     }
     >
@@ -23,14 +42,7 @@ const StarButton = props =>{
   }
   return (
     <Mutation mutation={viewerHasStarred? RemoveStars : AddStars}
-     refetchQueries={
-       [
-     {
-       query: searchRepositories,
-       variables: {query,first,last,before,after}
-     }
-     ]
-     } 
+    
      >
     {
       AddOrRemoveStar => <StarStatus AddOrRemoveStar={AddOrRemoveStar} />
