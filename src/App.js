@@ -4,7 +4,7 @@ import {Mutation,ApolloProvider,Query} from 'react-apollo'
 import client from './client'
 
 const StarButton = props =>{
-  const node = props.node
+  const {node,query,first,last,before,after} = props
   const totalCount = node.stargazers.totalCount
   const viewerHasStarred = node.viewerHasStarred
   const stargazerUnit = totalCount === 1 ? "star":"stars"
@@ -22,7 +22,16 @@ const StarButton = props =>{
     )
   }
   return (
-    <Mutation mutation={viewerHasStarred? RemoveStars : AddStars}>
+    <Mutation mutation={viewerHasStarred? RemoveStars : AddStars}
+     refetchQueries={
+       [
+     {
+       query: searchRepositories,
+       variables: {query,first,last,before,after}
+     }
+     ]
+     } 
+     >
     {
       AddOrRemoveStar => <StarStatus AddOrRemoveStar={AddOrRemoveStar} />
     }
@@ -97,7 +106,7 @@ class App extends Component {
              
             return (
               <React.Fragment>
-              <h2>{title}</h2>)
+              <h2>{title}</h2>
               <ul>
               
               {
@@ -108,7 +117,7 @@ class App extends Component {
                     <li key={node.id} >
                     <a href={node.url} target="_blank" rel="noopener noreferrer">{node.name}</a>
                     &nbsp;
-                    <StarButton node={node}/>
+                    <StarButton node={node} {...{query,first,last,before,after}}/>
                     </li>
                     )
                 })
