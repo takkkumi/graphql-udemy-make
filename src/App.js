@@ -16,6 +16,9 @@ const StarButton = props =>{
       variables: {input: {starrableId: node.id}},
       update: (store,{ data: {addStar,removeStar}}) =>{
       const {starrable} = addStar || removeStar
+      const requestAddCheck = {starrable} === addStar && viewerHasStarred
+      const requestRemoveCheck = {starrable} === removeStar && !viewerHasStarred
+      const requestCheck = requestAddCheck || requestAddCheck
       const data = store.readQuery({
         query: searchRepositories,
       variables: {query,first,last,before,after}})
@@ -56,24 +59,23 @@ const DEFAULT_STATE = {
   "last": null,
   "before": null,
   "after": null,
-  "query": "フロントエンドエンジニア"
+  "query": ""
 }
 
 class App extends Component {
   constructor(props){
     super(props)
     this.state = DEFAULT_STATE
-    this.handleChange=this.handleChange.bind(this)
+    this.myRef = React.createRef()
     this.handleSubmit=this.handleSubmit.bind(this)
   }
-  handleChange(event){
-    this.setState({
-      ...DEFAULT_STATE,
-      query: event.target.value
-    })
-  }
+ 
   handleSubmit(event){
     event.preventDefault()
+    
+    this.setState({
+      query: this.myRef.current.value
+    })
   }
   goNext(search){
     this.setState({
@@ -93,12 +95,13 @@ class App extends Component {
   }
   render() {
     const {query,first,last,before,after} = this.state
-    console.log({query})
+   
     
     return (
       <ApolloProvider client={client}>
       <form onSubmit={this.handleSubmit}>
-      <input value={query} onChange={this.handleChange}/> 
+      <input ref = {this.myRef} /> 
+      <input type = "submit" value = "Submit" />
       </form>
       <Query
       query={searchRepositories}
